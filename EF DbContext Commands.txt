@@ -1,0 +1,10 @@
+﻿dotnet ef migrations add "InitialMigration" -o "Data\Migrations" --context ApplicationDbContext
+
+dotnet ef migrations add "Update credentials strutture" -o "Data\Migrations" --context ApplicationDbContext
+
+dotnet ef migrations add "Modify fields SIM e PIN credentials" -o "Data\Migrations" --context ApplicationDbContext
+
+dotnet ef migrations add "Enlarged profile field and change name" -o "Data\Migrations" --context ApplicationDbContext
+
+
+dotnet ef database update --context ApplicationDbContext
