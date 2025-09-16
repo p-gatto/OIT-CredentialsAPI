@@ -41,6 +41,8 @@
         public string? Machine_IP { get; set; }
         public string? Machine_Name { get; set; }
         public string? Machine_Type { get; set; }
+        public int UsageCount { get; set; } = 0;
+        public DateTime? LastUsed { get; set; }
         public string? Note { get; set; }
         public DateTime? Expired_Date { get; set; }
         public bool Expired { get; set; } = false;

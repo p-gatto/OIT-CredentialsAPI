@@ -7,4 +7,8 @@ dotnet ef migrations add "Modify fields SIM e PIN credentials" -o "Data\Migratio
 dotnet ef migrations add "Enlarged profile field and change name" -o "Data\Migrations" --context ApplicationDbContext
 
 
+dotnet ef migrations add "UsageCount e LastUsed" -o "Data\Migrations" --context ApplicationDbContext
+
+dotnet ef migrations add "Index per UsageCount e LastUsed" -o "Data\Migrations" --context ApplicationDbContext
+
 dotnet ef database update --context ApplicationDbContext

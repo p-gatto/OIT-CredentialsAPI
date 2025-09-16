@@ -1,13 +1,5 @@
-﻿using CredentialsAPI.Data;
-using CredentialsAPI.Models.Domains;
-using CredentialsAPI.Models.Dtos;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
-using System;
-using System.Net.NetworkInformation;
-using static System.Collections.Specialized.BitVector32;
-
 
 namespace CredentialsAPI.Controllers
 {
@@ -20,6 +12,204 @@ namespace CredentialsAPI.Controllers
         public CredentialsController(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        // NUOVI ENDPOINT PER STATISTICHE E TOP LISTS
+
+        /// <summary>
+        /// Ottiene le 10 credenziali più utilizzate
+        /// </summary>
+        [HttpGet("most-used")]
+        public async Task<ActionResult<List<CredentialDto>>> GetMostUsed([FromQuery] int count = 10)
+        {
+            var credentials = await _context.Credentials
+                .Where(c => c.Active && c.UsageCount > 0)
+                .OrderByDescending(c => c.UsageCount)
+                .ThenByDescending(c => c.LastUsed)
+                .Take(count)
+                .Select(c => new CredentialDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    Profile = c.Profile,
+                    Subject_ID = c.Subject_ID,
+                    Nickname = c.Nickname,
+                    Area = c.Area,
+                    Section = c.Section,
+                    Username = c.Username,
+                    Password = c.Password,
+                    Email = c.Email,
+                    Url = c.Url,
+                    Operativity = c.Operativity,
+                    User_Admin = c.User_Admin,
+                    Password_First = c.Password_First,
+                    Password_Admin = c.Password_Admin,
+                    Password_3D_Secure = c.Password_3D_Secure,
+                    Password_Dispositiva = c.Password_Dispositiva,
+                    Password_History = c.Password_History,
+                    Sim_Serial = c.Sim_Serial,
+                    Sim_Operator = c.Sim_Operator,
+                    SmartPhone_Model = c.SmartPhone_Model,
+                    SmartPhone_Serial = c.SmartPhone_Serial,
+                    SmartPhone_IMEI = c.SmartPhone_IMEI,
+                    SmartPhone_Supplier = c.SmartPhone_Supplier,
+                    Numero_Cliente = c.Numero_Cliente,
+                    Iban = c.Iban,
+                    Numero_Carta = c.Numero_Carta,
+                    Data_Scadenza = c.Data_Scadenza,
+                    Pin_App = c.Pin_App,
+                    Pin_Carta = c.Pin_Carta,
+                    Pin = c.Pin,
+                    Puk = c.Puk,
+                    Codice_Dispositivo = c.Codice_Dispositivo,
+                    Codice_Sicurezza = c.Codice_Sicurezza,
+                    Frase_Identificativa = c.Frase_Identificativa,
+                    Machine_IP = c.Machine_IP,
+                    Machine_Name = c.Machine_Name,
+                    Machine_Type = c.Machine_Type,
+                    Note = c.Note,
+                    Expired_Date = c.Expired_Date,
+                    Expired = c.Expired,
+                    Active = c.Active,
+                    Modified = c.Modified,
+                    Created = c.Created,
+                    UsageCount = c.UsageCount,
+                    LastUsed = c.LastUsed
+                })
+                .ToListAsync();
+
+            return Ok(credentials);
+        }
+
+        /// <summary>
+        /// Ottiene le credenziali utilizzate più di recente
+        /// </summary>
+        [HttpGet("recent")]
+        public async Task<ActionResult<List<CredentialDto>>> GetRecent([FromQuery] int count = 10)
+        {
+            var credentials = await _context.Credentials
+                .Where(c => c.Active && c.LastUsed.HasValue)
+                .OrderByDescending(c => c.LastUsed)
+                .Take(count)
+                .Select(c => new CredentialDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    Profile = c.Profile,
+                    Subject_ID = c.Subject_ID,
+                    Nickname = c.Nickname,
+                    Area = c.Area,
+                    Section = c.Section,
+                    Username = c.Username,
+                    Password = c.Password,
+                    Email = c.Email,
+                    Url = c.Url,
+                    Operativity = c.Operativity,
+                    User_Admin = c.User_Admin,
+                    Password_First = c.Password_First,
+                    Password_Admin = c.Password_Admin,
+                    Password_3D_Secure = c.Password_3D_Secure,
+                    Password_Dispositiva = c.Password_Dispositiva,
+                    Password_History = c.Password_History,
+                    Sim_Serial = c.Sim_Serial,
+                    Sim_Operator = c.Sim_Operator,
+                    SmartPhone_Model = c.SmartPhone_Model,
+                    SmartPhone_Serial = c.SmartPhone_Serial,
+                    SmartPhone_IMEI = c.SmartPhone_IMEI,
+                    SmartPhone_Supplier = c.SmartPhone_Supplier,
+                    Numero_Cliente = c.Numero_Cliente,
+                    Iban = c.Iban,
+                    Numero_Carta = c.Numero_Carta,
+                    Data_Scadenza = c.Data_Scadenza,
+                    Pin_App = c.Pin_App,
+                    Pin_Carta = c.Pin_Carta,
+                    Pin = c.Pin,
+                    Puk = c.Puk,
+                    Codice_Dispositivo = c.Codice_Dispositivo,
+                    Codice_Sicurezza = c.Codice_Sicurezza,
+                    Frase_Identificativa = c.Frase_Identificativa,
+                    Machine_IP = c.Machine_IP,
+                    Machine_Name = c.Machine_Name,
+                    Machine_Type = c.Machine_Type,
+                    Note = c.Note,
+                    Expired_Date = c.Expired_Date,
+                    Expired = c.Expired,
+                    Active = c.Active,
+                    Modified = c.Modified,
+                    Created = c.Created,
+                    UsageCount = c.UsageCount,
+                    LastUsed = c.LastUsed
+                })
+                .ToListAsync();
+
+            return Ok(credentials);
+        }
+
+        /// <summary>
+        /// Incrementa il contatore di utilizzo di una credenziale
+        /// </summary>
+        [HttpPost("{id}/increment-usage")]
+        public async Task<IActionResult> IncrementUsage(int id)
+        {
+            var credential = await _context.Credentials.FindAsync(id);
+
+            if (credential == null)
+            {
+                return NotFound();
+            }
+
+            credential.UsageCount++;
+            credential.LastUsed = DateTime.UtcNow;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CredentialExists(id))
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Ottiene un riepilogo delle statistiche delle credenziali
+        /// </summary>
+        [HttpGet("stats")]
+        public async Task<ActionResult<object>> GetStats()
+        {
+            var totalCredentials = await _context.Credentials.CountAsync(c => c.Active);
+            var usedCredentials = await _context.Credentials.CountAsync(c => c.Active && c.UsageCount > 0);
+            var expiredCredentials = await _context.Credentials.CountAsync(c => c.Active && c.Expired);
+            var totalUsage = await _context.Credentials.Where(c => c.Active).SumAsync(c => c.UsageCount);
+
+            var mostUsedCredential = await _context.Credentials
+                .Where(c => c.Active && c.UsageCount > 0)
+                .OrderByDescending(c => c.UsageCount)
+                .FirstOrDefaultAsync();
+
+            var lastUsedCredential = await _context.Credentials
+                .Where(c => c.Active && c.LastUsed.HasValue)
+                .OrderByDescending(c => c.LastUsed)
+                .FirstOrDefaultAsync();
+
+            return Ok(new
+            {
+                TotalCredentials = totalCredentials,
+                UsedCredentials = usedCredentials,
+                ExpiredCredentials = expiredCredentials,
+                TotalUsage = totalUsage,
+                MostUsedCredential = mostUsedCredential?.Name,
+                MostUsedCredentialUsageCount = mostUsedCredential?.UsageCount ?? 0,
+                LastUsedCredential = lastUsedCredential?.Name,
+                LastUsedDate = lastUsedCredential?.LastUsed
+            });
         }
 
         [HttpGet("all")]
@@ -81,7 +271,9 @@ namespace CredentialsAPI.Controllers
                     Expired = credential.Expired,
                     Active = credential.Active,
                     Modified = credential.Modified,
-                    Created = credential.Created
+                    Created = credential.Created,
+                    UsageCount = credential.UsageCount,
+                    LastUsed = credential.LastUsed
                 };
                 result.Add(cred);
             }
@@ -131,6 +323,8 @@ namespace CredentialsAPI.Controllers
                     "active" => query.OrderBy(c => c.Active),
                     "modified" => query.OrderBy(c => c.Modified),
                     "created" => query.OrderBy(c => c.Created),
+                    "usagecount" => query.OrderBy(c => c.UsageCount),
+                    "lastused" => query.OrderBy(c => c.LastUsed),
                     _ => query.OrderBy(c => c.Name)
                 }
                 : filter.SortField?.ToLower() switch
@@ -142,6 +336,8 @@ namespace CredentialsAPI.Controllers
                     "active" => query.OrderByDescending(c => c.Active),
                     "modified" => query.OrderByDescending(c => c.Modified),
                     "created" => query.OrderByDescending(c => c.Created),
+                    "usagecount" => query.OrderByDescending(c => c.UsageCount),
+                    "lastused" => query.OrderByDescending(c => c.LastUsed),
                     _ => query.OrderByDescending(c => c.Name)
                 };
 
@@ -195,7 +391,9 @@ namespace CredentialsAPI.Controllers
                     Expired = c.Expired,
                     Active = c.Active,
                     Modified = c.Modified,
-                    Created = c.Created
+                    Created = c.Created,
+                    UsageCount = c.UsageCount,
+                    LastUsed = c.LastUsed
                 })
                 .ToListAsync();
 
@@ -265,7 +463,9 @@ namespace CredentialsAPI.Controllers
                 Expired = credential.Expired,
                 Active = credential.Active,
                 Modified = credential.Modified,
-                Created = credential.Created
+                Created = credential.Created,
+                UsageCount = credential.UsageCount,
+                LastUsed = credential.LastUsed
             };
         }
 
@@ -318,7 +518,9 @@ namespace CredentialsAPI.Controllers
                 Expired = createDto.Expired,
                 Active = createDto.Active,
                 Created = DateTime.UtcNow,
-                Modified = DateTime.UtcNow
+                Modified = DateTime.UtcNow,
+                UsageCount = 0,
+                LastUsed = null
             };
 
             _context.Credentials.Add(credential);
@@ -373,7 +575,9 @@ namespace CredentialsAPI.Controllers
                     Expired = credential.Expired,
                     Active = credential.Active,
                     Modified = credential.Modified,
-                    Created = credential.Created
+                    Created = credential.Created,
+                    UsageCount = credential.UsageCount,
+                    LastUsed = credential.LastUsed
                 });
         }
 
@@ -431,6 +635,7 @@ namespace CredentialsAPI.Controllers
             credential.Expired = updateDto.Expired;
             credential.Active = updateDto.Active;
             credential.Modified = DateTime.UtcNow;
+            // Non aggiorniamo UsageCount e LastUsed nell'update normale
 
             try
             {

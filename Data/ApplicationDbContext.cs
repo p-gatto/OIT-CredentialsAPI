@@ -24,6 +24,20 @@ namespace CredentialsAPI.Data
 
             modelBuilder.Entity<Credential>()
                 .HasIndex(c => c.Expired);
+
+            // NUOVI INDICI PER LE STATISTICHE DI UTILIZZO
+            modelBuilder.Entity<Credential>()
+                .HasIndex(c => c.UsageCount);
+
+            modelBuilder.Entity<Credential>()
+                .HasIndex(c => c.LastUsed);
+
+            // Indice composto per ottimizzare le query più comuni
+            modelBuilder.Entity<Credential>()
+                .HasIndex(c => new { c.Active, c.UsageCount });
+
+            modelBuilder.Entity<Credential>()
+                .HasIndex(c => new { c.Active, c.LastUsed });
         }
     }
 }

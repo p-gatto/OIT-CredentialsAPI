@@ -121,6 +121,10 @@ namespace CredentialsAPI.Models.Domains
 
         [StringLength(30)]
         public string? Numero_Cliente { get; set; }
+               
+        public int UsageCount { get; set; } = 0;
+
+        public DateTime? LastUsed { get; set; }
 
         [StringLength(255)]
         public string? Note { get; set; }
